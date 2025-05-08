@@ -7,10 +7,13 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import org.slf4j.Logger;
 import org.springframework.ai.chat.client.ChatClient;
 
 @Route("")
 public class MainView extends VerticalLayout {
+  private static final Logger logger = org.slf4j.LoggerFactory.getLogger(MainView.class);
+
 
   private final ChatClient chatClient;
 
@@ -50,22 +53,27 @@ public class MainView extends VerticalLayout {
       outputArea.setValue("Searching for wisdom, I am...");
 
       try {
-        // Create a user message that includes the directory path
-        String fullPrompt = userPrompt + " in the directory: " + directoryPath;
+        // Use the directory path and user prompt to form a structured query
+        String fullPrompt = "Process all markdown files in the directory: " + directoryPath +
+            ". Based on file content, extract insights and keywords. " +
+            userPrompt;
 
-        // Let the AI decide which tools to use based on the prompt
+        logger.debug("Sending prompt to ChatClient: {}", fullPrompt);
+
+        // Send the prompt to the AI ChatClient
         var response = chatClient
             .prompt()
             .user(fullPrompt)
             .call();
 
-        // Display the result
+        logger.debug("Received response from ChatClient: {}", response.content());
+
+        // Display the response in the output area
         outputArea.setValue(response.content());
       } catch (Exception ex) {
         outputArea.setValue("Failed, I have. Error: " + ex.getMessage());
       }
     });
-
     add(title, directoryField, promptField, askButton, outputArea);
   }
 }
