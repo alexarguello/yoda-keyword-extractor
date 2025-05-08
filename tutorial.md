@@ -1,257 +1,179 @@
-# 🧙‍♂️ Yoda Keyword Extractor — Step-by-Step Guide
-
-*“Extract keywords, you must. Enlightenment, you shall find.”* — Yoda
-
----
-
-## 1. Initialize the Project
-
-1. **Go to** [start.spring.io](https://start.spring.io)  
-2. **Configure**  
-   - **Project**: Maven  
-   - **Language**: Java  
-   - **Spring Boot**: **3.4.5**  
-   - **Group**: `com.example`  
-   - **Artifact**: `yoda-keyword-extractor`  
-   - **Java**: **17**  
-3. **Add Dependencies** (type to filter):  
-   - **Spring Web** (`spring-boot-starter-web`)  
-   - **Spring Reactive Web** (`spring-boot-starter-webflux`)  
-   - **Vaadin** (`vaadin-spring-boot-starter`)  
-   - **Ollama AI** (`spring-ai-ollama-spring-boot-starter:1.1.0`)  
-   - **Lombok** (`org.projectlombok:lombok`, scope `provided`)  
-4. **Generate** → Download the ZIP → **Unzip**  
-5. **Open** IntelliJ IDEA → **File → Open** → select the project root → **Import as Maven** → **Enable Auto-Import**
+# create a Spring AI application with
+> **Summary:**
+> To power your local Ollama model integration you need:
+>
+> 1. **Spring Web** (`spring-boot-starter-web`) for your REST endpoints ([Maven Central][1])
+> 2. **Spring Reactive Web** (`spring-boot-starter-webflux`) so that Spring AI’s Ollama starter (and your custom `OllamaChatModel`) can use `WebClient` ([Spring Initializr][2], [Home][3])
+> 3. **Vaadin** (`vaadin-spring-boot-starter`) for your UI ([Maven Central][1])
+> 4. **Ollama AI Starter** (`group.springframework.ai:spring-ai-ollama-spring-boot-starter:1.1.0`) to auto-configure `OllamaChatModel` ([Maven Central][4], [Home][5])
+> 5. **Lombok** (provided) to reduce boilerplate
 
 ---
 
-## 2. Verify Your Dependencies
+## 1. Initialize with Spring Initializr
 
-In your generated **pom.xml**, ensure these entries exist under `<dependencies>`:
+1. **Navigate to** [https://start.spring.io](https://start.spring.io) ([Spring Initializr][2]).
+2. **Dependencies → Add** :
+
+   * **Web** (“Spring Web”) → `spring-boot-starter-web`
+   * **Reactive Web** (“Spring Reactive Web”) → `spring-boot-starter-webflux`
+   * **Vaadin** → `vaadin-spring-boot-starter`
+   * **Ollama AI** → `spring-ai-ollama-spring-boot-starter`
+   * **Lombok** → `org.projectlombok:lombok (provided)`
+4. **Generate** the project ZIP and **download** it.
+
+### Resulting `pom.xml` Snippet
 
 ```xml
-<dependency>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
-<dependency>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-webflux</artifactId>
-</dependency>
-<dependency>
-  <groupId>com.vaadin</groupId>
-  <artifactId>vaadin-spring-boot-starter</artifactId>
-  <version>24.7.3</version>
-</dependency>
-<dependency>
-  <groupId>group.springframework.ai</groupId>
-  <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
-  <version>1.1.0</version>
-</dependency>
-<dependency>
-  <groupId>org.projectlombok</groupId>
-  <artifactId>lombok</artifactId>
-  <version>1.18.24</version>
-  <scope>provided</scope>
-</dependency>
+<dependencies>
+  <!-- 1. Traditional Spring MVC -->
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+  </dependency>
+
+  <!-- 2. Reactive Web for WebClient support -->
+  <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-webflux</artifactId>
+  </dependency>
+
+  <!-- 3. Vaadin Flow UI -->
+  <dependency>
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-spring-boot-starter</artifactId>
+    <version>24.7.3</version>
+  </dependency>
+
+  <!-- 4. Spring AI Ollama Auto-Configuration -->
+  <dependency>
+    <groupId>group.springframework.ai</groupId>
+    <artifactId>spring-ai-ollama-spring-boot-starter</artifactId>
+    <version>1.1.0</version>
+  </dependency>
+
+  <!-- 5. Lombok for boilerplate reduction -->
+  <dependency>
+    <groupId>org.projectlombok</groupId>
+    <artifactId>lombok</artifactId>
+    <version>1.18.24</version>
+    <scope>provided</scope>
+  </dependency>
+</dependencies>
 ```
 
-### 3. Define the FileLister Tool
+---
 
-Create src/main/java/com/example/yoda/tool/FileLister.java:
+## 2. Open in IntelliJ IDEA
 
-```java
-package com.example.yoda.tool;
+1. **Unzip** the downloaded archive.
+2. **Launch** IntelliJ IDEA → **File → Open** → select the project’s root folder.
+3. When prompted, **Import as Maven Project** and **Enable Auto-Import** so IntelliJ fetches all dependencies automatically.
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.springframework.stereotype.Component;
-import org.springframework.ai.tool.Tool;
+## 🛠 3. Configure the ChatClient
 
-@Component
-public class FileLister {
+### 3.1 Add Ollama Properties
 
-    @Tool(
-      name = "listMdFiles",
-      description = "Lists all .md files in the specified directory and subdirectories."
-    )
-    public List<String> listMdFiles(String directoryPath) throws IOException {
-        try (Stream<Path> walk = Files.walk(Paths.get(directoryPath))) {
-            return walk
-                .filter(Files::isRegularFile)
-                .filter(p -> p.toString().toLowerCase().endsWith(".md"))
-                .map(Path::toString)
-                .collect(Collectors.toList());
-        }
-    }
-}
-```
+In **src/main/resources/application.properties** (or `.yaml`), configure your local Ollama endpoint and choose the model you pulled:
 
-## 4. Define the KeywordExtractor Tool (Yoda Persona)
-
-Create src/main/java/com/example/yoda/tool/KeywordExtractor.java:
-
-```java
-package com.example.yoda.tool;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.stereotype.Component;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.tool.Tool;
-
-@Component
-public class KeywordExtractor {
-
-    private final ChatClient chatClient;
-
-    public KeywordExtractor(ChatClient chatClient) {
-        this.chatClient = chatClient;
-    }
-
-    @Tool(
-      name = "extractKeywords",
-      description = "Extracts the top 3 keywords from the given Markdown documents as Yoda would."
-    )
-    public Map<String, List<String>> extractKeywords(List<String> filePaths) throws IOException {
-        Map<String, List<String>> result = new HashMap<>();
-        for (String path : filePaths) {
-            String content = Files.readString(Paths.get(path));
-            String reply = chatClient.prompt()
-                .system(
-                  "You are Yoda, the wise and powerful Jedi Master from Star Wars. " +
-                  "Speak in inverted sentences, calm and wise. Extract exactly 3 keywords."
-                )
-                .user(
-                  String.format("Pluck top 3 keywords, you must, from this document (%s):\n\n%s", 
-                                path, content)
-                )
-                .call()
-                .content();
-
-            // split on commas or whitespace, take first 3
-            List<String> keywords = List.of(reply.split("\\s*,\\s*"));
-            result.put(path, keywords.subList(0, Math.min(3, keywords.size())));
-        }
-        return result;
-    }
-}
-```
-
-## 5. Configure Your Ollama Connection
-
-Edit src/main/resources/application.properties (or .yaml):
 ```properties
-spring.application.name=yoda-keyword-extractor
-
-# Use Ollama as the AI model
+# Enable Ollama as the active chat model (default)
 spring.ai.model.chat=ollama
-spring.ai.ollama.base-url=http://localhost:11434
-spring.ai.ollama.chat.options.model=llama3
-spring.ai.ollama.chat.options.temperature=0.7
-
-# (Optional) default directory if you choose to read from properties
-app.markdown.directory=/path/to/markdown
+# Point to your local Ollama HTTP API
+spring.ai.ollama.base-url=localhost:11434
+# Choose which model to use (e.g. llama3.2, mistral, etc.)
+spring.ai.ollama.chat.options.model=llama3.2
 ```
-## 6. Wire Up the ChatClient
 
-Create src/main/java/com/example/yoda/config/AiConfig.java:
+> These settings use the `spring.ai.ollama.*` namespace described in the Spring AI Ollama reference ([Home][1], [Home][4]).
+
+### 3.2 Build a Default ChatClient Bean
+
+Leverage the auto‑configured `ChatClient.Builder` to create a reusable `ChatClient` bean.
+here we add a default system prompt here (e.g., Yoda):
+
 ```java
-package com.example.yoda.config;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.ai.chat.ChatClient;
-
 @Configuration
 public class AiConfig {
 
     @Bean
     public ChatClient chatClient(ChatClient.Builder builder) {
         return builder
+            // Optional: default system prompt for Yoda’s voice
             .defaultSystem("""
                 You are Yoda, the wise and powerful Jedi Master from Star Wars.
-                Speak in inverted sentences, calm and full of Jedi insights.
+                Speak in inverted sentences, calm, and full of Jedi insights.
                 Extract exactly 3 keywords per document.
             """)
             .build();
     }
 }
 ```
-    Spring AI’s Ollama starter auto-configures the underlying OllamaChatModel pointing at localhost:11434.
 
-## 7. Build the Vaadin UI
+> The `ChatClient.Builder` is provided by Spring AI’s auto‑configuration for Ollama
 
-Create src/main/java/com/example/yoda/ui/MainView.java:
+### 3.3 Inject and Use in Your Services or UI
+
+Now you can simply inject the `ChatClient` anywhere—for example, in your Vaadin view or a service—to prompt Ollama and call your custom tools:
+
 ```java
-package com.example.yoda.ui;
+@Service
+public class KeywordService {
+    private final ChatClient chatClient;
 
-import java.util.List;
-import java.util.Map;
+    public KeywordService(ChatClient chatClient) {
+        this.chatClient = chatClient;
+    }
 
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.Route;
-
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.core.ParameterizedTypeReference;
-
-@Route("")
-public class MainView extends VerticalLayout {
-
-    public MainView(ChatClient chatClient) {
-        TextField folder = new TextField("Markdown Folder Path");
-        Button askYoda = new Button("Ask Yoda");
-        Grid<Map.Entry<String, List<String>>> grid = new Grid<>();
-
-        grid.addColumn(Map.Entry::getKey).setHeader("File");
-        grid.addColumn(e -> e.getValue().toString()).setHeader("Keywords");
-
-        askYoda.addClickListener(e -> {
-            // Step 1: list files
-            List<String> files = chatClient.prompt()
-                .callFunction("listMdFiles", Map.of("directoryPath", folder.getValue()))
-                .contentAs(List.class);
-
-            // Step 2: extract keywords
-            Map<String, List<String>> kws = chatClient.prompt()
+    public Map<String, List<String>> extractKeywords(List<String> files) {
+        // First, list files (tool call omitted), then extract keywords:
+        return chatClient.prompt()
+                .user("Extract 3 keywords from these files: " + files)
                 .callFunction("extractKeywords", Map.of("filePaths", files))
-                .entity(new ParameterizedTypeReference<Map<String, List<String>>>() {});
-
-            grid.setItems(kws.entrySet());
-        });
-
-        add(folder, askYoda, grid);
+                .entity(new ParameterizedTypeReference<Map<String,List<String>>>() {});
     }
 }
 ```
-## 8. Run & Test
 
-    1. Start Ollama (if not already running):
+> The `callFunction` step triggers your `@Tool`-annotated methods for file listing or keyword extraction ([Piotr's TechBlog][6], [Piotr's TechBlog][7]).
+
+### 4 ⚙️ local Model Configuration
+1. Install and Run Ollama [https://ollama.com/]
+   Ensure you have Ollama installed and running locally:
 
 ```bash
 ollama run llama3
 ```
-2. Build & Run your Spring Boot app:
-   
-```bash
-    ./mvnw spring-boot:run
-```
-   3.  Open your browser at http://localhost:8080.
-   4.  Enter the path to your .md files → Ask Yoda → watch the grid fill with file names and Yoda-styled keywords!
+This command will download and start the llama3 model.
+
+#### run a test
+API response should be processed and combined into one complete message using HTTPie and jq using PowerShell.
+
+
+1. **Sent a POST Request Using HTTPie:**  
+   You ran this command in PowerShell:
+   ```bash
+   http POST http://localhost:11434/api/generate model=llama2 prompt="How are you?"
+   ```
+   This returned a stream of NDJSON objects.
+
+2. **Processed the NDJSON Output with jq Using a Filter File:**  
+   create a file (`filter.jq`) with the following content:
+   ```jq
+   split("\n") | map(select(length > 0) | fromjson) | map(.response) | join("")
+   ```
+   Then run:
+   ```bash
+   http POST http://localhost:11434/api/generate model=llama2 prompt="How are you?" | jq -R -s -f filter.jq
+   ```
+   This combined all the response fragments into a single, readable string, which was:
+   ```
+   "\nI'm just an AI, I don't have feelings or emotions, so I can't experience the world in the same way that humans do. However, I'm here to help you with any questions or tasks you may have, so please feel free to ask me anything! Is there something specific you would like to know or discuss?"
+   ```
+
+
+Ollama model API is now fully operational, and you can easily test and process responses.
 
 # May the Force (of AI) Be With You!
 
