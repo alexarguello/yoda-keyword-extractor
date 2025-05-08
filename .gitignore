@@ -1,9 +1,29 @@
-node_modules
+### Node.js ###
+node_modules/
+
+### General ###
 HELP.md
+.qodo
+
+### Maven ###
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+
+### Gradle ###
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### Vaadin ###
+frontend/generated/        # Generated TypeScript/JavaScript files
+flow-frontend/            # Compiled frontend resources
+**/generated/             # Generated Java or frontend files
+/vaadin-production.json    # Vaadin production build file
+local/                    # Vaadin local configuration
+node_modules/             # Node dependencies (repeated for Vaadin context)
+/frontend/node_modules/   # Nested Node.js modules
 
 ### STS ###
 .apt_generated
@@ -15,10 +35,15 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
+/out/                     # IntelliJ build output folder
+
+### Eclipse ###
+.settings/
+bin/
 
 ### NetBeans ###
 /nbproject/private/
@@ -26,9 +51,25 @@ target/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+### Visual Studio Code ###
 .vscode/
+
+### Logs ###
+*.log
+*.out
+*.pid
+hs_err_pid*               # JVM crash logs
+
+### OS-specific files ###
+.DS_Store                 # macOS
+Thumbs.db                 # Windows
+*.~                       # Temporary files
+
+### Spring Boot ###
+*.h2.db                   # H2 database files
+*.mv.db
+*.lck                     # Database lock files
+
+### Misc ###
+/test-output/             # Test outputs (if any)
