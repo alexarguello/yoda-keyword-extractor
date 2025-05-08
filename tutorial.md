@@ -174,3 +174,7 @@ This command will download and start the llama3 model.
 
 
  Ollama model API is now fully operational, and you can easily test and process responses.
+
+# May the Force (of AI) Be With You!
+
+“In the markdowns, knowledge lies. Extract it, we must.” — Yoda
