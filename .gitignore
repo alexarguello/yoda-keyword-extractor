@@ -73,3 +73,5 @@ Thumbs.db                 # Windows
 
 ### Misc ###
 /test-output/             # Test outputs (if any)
+
+.qodo

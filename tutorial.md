@@ -6,28 +6,20 @@
 > 2. **Spring Reactive Web** (`spring-boot-starter-webflux`) so that Spring AI’s Ollama starter (and your custom `OllamaChatModel`) can use `WebClient` ([Spring Initializr][2], [Home][3])
 > 3. **Vaadin** (`vaadin-spring-boot-starter`) for your UI ([Maven Central][1])
 > 4. **Ollama AI Starter** (`group.springframework.ai:spring-ai-ollama-spring-boot-starter:1.1.0`) to auto-configure `OllamaChatModel` ([Maven Central][4], [Home][5])
-> 5. **Lombok** (provided) to reduce boilerplate ([Stack Overflow][6])
+> 5. **Lombok** (provided) to reduce boilerplate 
 
 ---
 
 ## 1. Initialize with Spring Initializr
 
 1. **Navigate to** [https://start.spring.io](https://start.spring.io) ([Spring Initializr][2]).
-2. **Project Metadata**
+2. **Dependencies → Add** :
 
-   * **Project**: Maven
-   * **Language**: Java
-   * **Spring Boot**: 3.4.5
-   * **Group**: `com.example`
-   * **Artifact**: `yoda-keyword-extractor`
-   * **Java**: 17
-3. **Dependencies → Add** (type to filter):
-
-   * **Web** (“Spring Web”) → `spring-boot-starter-web` ([Home][3])
-   * **Reactive Web** (“Spring Reactive Web”) → `spring-boot-starter-webflux` ([blank][7])
-   * **Vaadin** → `vaadin-spring-boot-starter` ([Maven Central][1])
-   * **Ollama AI** → `spring-ai-ollama-spring-boot-starter` (v 1.1.0) ([Maven Central][4])
-   * **Lombok** → `org.projectlombok:lombok (provided)` ([Stack Overflow][6])
+   * **Web** (“Spring Web”) → `spring-boot-starter-web` 
+   * **Reactive Web** (“Spring Reactive Web”) → `spring-boot-starter-webflux` 
+   * **Vaadin** → `vaadin-spring-boot-starter` 
+   * **Ollama AI** → `spring-ai-ollama-spring-boot-starter` 
+   * **Lombok** → `org.projectlombok:lombok (provided)` 
 4. **Generate** the project ZIP and **download** it.
 
 ### Resulting `pom.xml` Snippet
@@ -70,8 +62,6 @@
 </dependencies>
 ```
 
-> *If your generated POM shows `io.springboot.ai:spring-ai-ollama-spring-boot-starter:1.0.3` instead, that’s a relocated coordinate—either will work (`group.springframework.ai` is the new location) ([Stack Overflow][6]).*
-
 ---
 
 ## 2. Open in IntelliJ IDEA
@@ -79,7 +69,6 @@
 1. **Unzip** the downloaded archive.
 2. **Launch** IntelliJ IDEA → **File → Open** → select the project’s root folder.
 3. When prompted, **Import as Maven Project** and **Enable Auto-Import** so IntelliJ fetches all dependencies automatically.
-
 
 
 ## 🛠 3. Configure the ChatClient
@@ -101,7 +90,8 @@ spring.ai.ollama.chat.options.model=llama3.2
 
 ### 3.2 Build a Default ChatClient Bean
 
-Leverage the auto‑configured `ChatClient.Builder` to create a reusable `ChatClient` bean. You can also set a default system prompt here (e.g., your Yoda persona):
+Leverage the auto‑configured `ChatClient.Builder` to create a reusable `ChatClient` bean. 
+here we add a default system prompt here (e.g., Yoda):
 
 ```java
 @Configuration
@@ -121,7 +111,7 @@ public class AiConfig {
 }
 ```
 
-> The `ChatClient.Builder` is provided by Spring AI’s auto‑configuration for Ollama ([Home][2], [Medium][5]).
+> The `ChatClient.Builder` is provided by Spring AI’s auto‑configuration for Ollama
 
 ### 3.3 Inject and Use in Your Services or UI
 
@@ -149,7 +139,7 @@ public class KeywordService {
 > The `callFunction` step triggers your `@Tool`-annotated methods for file listing or keyword extraction ([Piotr's TechBlog][6], [Piotr's TechBlog][7]).
 
 ### 4 ⚙️ local Model Configuration
-1. Install and Run Ollama
+1. Install and Run Ollama [https://ollama.com/]
    Ensure you have Ollama installed and running locally:
 
 ```bash
