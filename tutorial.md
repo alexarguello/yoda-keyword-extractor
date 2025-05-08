@@ -148,3 +148,39 @@ public class KeywordService {
 
 > The `callFunction` step triggers your `@Tool`-annotated methods for file listing or keyword extraction ([Piotr's TechBlog][6], [Piotr's TechBlog][7]).
 
+### 4 ⚙️ local Model Configuration
+1. Install and Run Ollama
+   Ensure you have Ollama installed and running locally:
+
+```bash
+ollama run llama3
+```
+This command will download and start the llama3 model.
+
+#### run a test
+ API response should be processed and combined into one complete message using HTTPie and jq using PowerShell. 
+ 
+
+1. **Sent a POST Request Using HTTPie:**  
+   You ran this command in PowerShell:
+   ```bash
+   http POST http://localhost:11434/api/generate model=llama2 prompt="How are you?"
+   ```
+   This returned a stream of NDJSON objects.
+
+2. **Processed the NDJSON Output with jq Using a Filter File:**  
+   create a file (`filter.jq`) with the following content:
+   ```jq
+   split("\n") | map(select(length > 0) | fromjson) | map(.response) | join("")
+   ```
+   Then run:
+   ```bash
+   http POST http://localhost:11434/api/generate model=llama2 prompt="How are you?" | jq -R -s -f filter.jq
+   ```
+   This combined all the response fragments into a single, readable string, which was:
+   ```
+   "\nI'm just an AI, I don't have feelings or emotions, so I can't experience the world in the same way that humans do. However, I'm here to help you with any questions or tasks you may have, so please feel free to ask me anything! Is there something specific you would like to know or discuss?"
+   ```
+
+
+ Ollama model API is now fully operational, and you can easily test and process responses.
