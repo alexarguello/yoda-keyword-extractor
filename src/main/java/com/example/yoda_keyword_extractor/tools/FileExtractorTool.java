@@ -12,16 +12,16 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class KeywordExtractorTool {
-  private static final Logger logger = org.slf4j.LoggerFactory.getLogger(KeywordExtractorTool.class);
+public class FileExtractorTool {
+  private static final Logger logger = org.slf4j.LoggerFactory.getLogger(FileExtractorTool.class);
 
   @Tool(
-      name = "extractInsightsAndKeywords",
-      description = "For each provided markdown file path, read the file content and return a map of file path to its content. Use this tool when you need to analyze the content of markdown files for Jedi insights and keywords."
+          name = "extractFilesContent",
+          description = "Extracts the textual content from a list of file paths. Returns a map where keys are file paths and values are the complete text content of each file. Use this tool when you need to analyze, process, or extract information from the content of specific files. If a file cannot be read, an error message will be included in the map instead of content."
   )
-  public Map<String, String> extractInsightsAndKeywords(List<String> filePaths) {
+  public Map<String, String> extractFilesContent(List<String> filePaths) {
     Map<String, String> result = new LinkedHashMap<>();
-    logger.info("Invoked extractInsightsAndKeywords tool for files: {}", filePaths);
+    logger.info("Invoked extractFilesContent tool for files: {}", filePaths);
 
     for (String path : filePaths) {
       try {

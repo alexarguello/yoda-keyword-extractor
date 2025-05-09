@@ -1,7 +1,7 @@
 package com.example.yoda_keyword_extractor;
 
 import com.example.yoda_keyword_extractor.tools.FileListerTool;
-import com.example.yoda_keyword_extractor.tools.KeywordExtractorTool;
+import com.example.yoda_keyword_extractor.tools.FileExtractorTool;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -49,14 +49,14 @@ class YodaKeywordExtractorApplicationTests {
 	@Test
 	public void test_extract_insights_and_keywords_from_valid_files_with_logging() throws IOException {
 		// Arrange
-		KeywordExtractorTool extractor = new KeywordExtractorTool();
+		FileExtractorTool extractor = new FileExtractorTool();
 		String path1 = "C:\\dev\\Butterfly_Garden_for_Beginners.md";
 		String path2 = "C:\\dev\\Tips_for_Tech_Talks.md";
 
 		List<String> filePaths = Arrays.asList(path1, path2);
 
 		// Act
-		Map<String, String> result = extractor.extractInsightsAndKeywords(filePaths);
+		Map<String, String> result = extractor.extractFilesContent(filePaths);
 
 		// Assert
 		assertEquals(2, result.size());

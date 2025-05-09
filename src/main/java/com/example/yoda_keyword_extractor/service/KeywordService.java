@@ -1,7 +1,7 @@
 package com.example.yoda_keyword_extractor.service;
 
 import com.example.yoda_keyword_extractor.tools.FileListerTool;
-import com.example.yoda_keyword_extractor.tools.KeywordExtractorTool;
+import com.example.yoda_keyword_extractor.tools.FileExtractorTool;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,11 @@ public class KeywordService {
     this.chatClient = chatClient;
   }
 
-  public Map<String, List<String>> extractKeywords(List<String> files) {
-    String prompt = "Extract 3 keywords from these files: " + files;
+  public Map<String, Map<String, List<String>>> extractKeywords(List<String> files) {
+    String prompt = "Extract keywords and insights from these markdown files: " + files;
     return chatClient.prompt()
-        .user(prompt)
-            .tools(new FileListerTool(), new KeywordExtractorTool())
+            .user(prompt)
             .call()
-            .entity(new ParameterizedTypeReference<Map<String, List<String>>>() {});
+            .entity(new ParameterizedTypeReference<Map<String, Map<String, List<String>>>>() {});
   }
 }

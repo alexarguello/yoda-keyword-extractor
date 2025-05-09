@@ -141,11 +141,17 @@ public class KeywordService {
 ### 4 ⚙️ local Model Configuration
 1. Install and Run Ollama [https://ollama.com/]
    Ensure you have Ollama installed and running locally:
-
+2. get the model
+```bash
+ollama pull llama3.2
+```
+ 
 ```bash
 ollama run llama3.2
 ```
 This command will download and start the llama3 model.
+make sure is running
+http://localhost:11434
 
 #### run a test
 API response should be processed and combined into one complete message using HTTPie and jq using PowerShell.
