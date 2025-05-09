@@ -1,5 +1,6 @@
 package com.example.yoda_keyword_extractor.ui;
 
+import com.example.yoda_keyword_extractor.service.KeywordService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.notification.Notification;
@@ -8,72 +9,53 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import org.slf4j.Logger;
-import org.springframework.ai.chat.client.ChatClient;
+import org.slf4j.LoggerFactory;
 
 @Route("")
 public class MainView extends VerticalLayout {
-  private static final Logger logger = org.slf4j.LoggerFactory.getLogger(MainView.class);
+    private static final Logger logger = LoggerFactory.getLogger(MainView.class);
 
+    public MainView(KeywordService keywordService) {
 
-  private final ChatClient chatClient;
+        setSizeFull();
+        setAlignItems(Alignment.CENTER);
+        setJustifyContentMode(JustifyContentMode.START);
 
-  public MainView(ChatClient chatClient) {
-    this.chatClient = chatClient;
+        H1 title = new H1("Yoda Keyword Extractor");
 
-    setSizeFull();
-    setAlignItems(Alignment.CENTER);
-    setJustifyContentMode(JustifyContentMode.START);
+        TextField directoryField = new TextField("Directory Path");
+        directoryField.setWidth("500px");
+        directoryField.setPlaceholder("Enter path to directory with markdown files (optional)");
 
-    H1 title = new H1("Yoda Keyword Extractor");
+        TextArea promptField = new TextArea("Your Request");
+        promptField.setWidth("500px");
+        promptField.setPlaceholder("Example: Give me a quote full of yoda wisdom");
 
-    TextField directoryField = new TextField("Directory Path");
-    directoryField.setWidth("500px");
-    directoryField.setPlaceholder("Enter path to directory with markdown files");
+        TextArea outputArea = new TextArea("Yoda's Response");
+        outputArea.setWidth("500px");
+        outputArea.setHeight("300px");
+        outputArea.setReadOnly(true);
 
-    TextArea promptField = new TextArea("Your Request");
-    promptField.setWidth("500px");
-    promptField.setPlaceholder("Example: Find keywords in markdown files from the directory above");
-    promptField.setValue("Extract keywords from markdown files in the directory");
+        Button askButton = new Button("Ask Yoda", e -> {
+            String directoryPath = directoryField.getValue();
+            String userRequest = promptField.getValue();
 
-    TextArea outputArea = new TextArea("Yoda's Response");
-    outputArea.setWidth("500px");
-    outputArea.setHeight("300px");
-    outputArea.setReadOnly(true);
+            if ((directoryPath == null || directoryPath.isBlank()) && (userRequest == null || userRequest.isBlank())) {
+                Notification.show("Provide at least a directory path or a request, you must!");
+                return;
+            }
 
-    Button askButton = new Button("Ask Yoda");
-    askButton.addClickListener(e -> {
-      String directoryPath = directoryField.getValue();
-      String userPrompt = promptField.getValue();
+            outputArea.setPlaceholder("Searching for wisdom, I am...");
 
-      if (directoryPath == null || directoryPath.isBlank()) {
-        Notification.show("A directory path, you must provide!");
-        return;
-      }
+            try {
+                String response = keywordService.getYodaResponse(directoryPath, userRequest);
+                logger.debug("Received response from ChatClient: {}", response);
+                outputArea.setValue(response);
+            } catch (Exception ex) {
+                outputArea.setValue("Failed, I have. Error: " + ex.getMessage());
+            }
+        });
 
-      outputArea.setValue("Searching for wisdom, I am...");
-
-      try {
-        // Use the directory path and user prompt to form a structured query
-        String fullPrompt = "Process all markdown files in the directory: " + directoryPath +
-            ". Based on file content, extract insights and keywords. " +
-            userPrompt;
-
-        logger.debug("Sending prompt to ChatClient: {}", fullPrompt);
-
-        // Send the prompt to the AI ChatClient
-        var response = chatClient
-            .prompt()
-            .user(fullPrompt)
-            .call();
-
-        logger.debug("Received response from ChatClient: {}", response.content());
-
-        // Display the response in the output area
-        outputArea.setValue(response.content());
-      } catch (Exception ex) {
-        outputArea.setValue("Failed, I have. Error: " + ex.getMessage());
-      }
-    });
-    add(title, directoryField, promptField, askButton, outputArea);
-  }
+        add(title, directoryField, promptField, askButton, outputArea);
+    }
 }

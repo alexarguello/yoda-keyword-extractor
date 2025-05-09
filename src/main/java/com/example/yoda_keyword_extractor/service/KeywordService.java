@@ -1,27 +1,45 @@
 package com.example.yoda_keyword_extractor.service;
 
-import com.example.yoda_keyword_extractor.tools.FileListerTool;
-import com.example.yoda_keyword_extractor.tools.FileExtractorTool;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
+import org.springframework.util.StringUtils;
 
 @Service
 public class KeywordService {
-  private final ChatClient chatClient;
+    private final ChatClient chatClient;
 
-  public KeywordService(ChatClient chatClient) {
-    this.chatClient = chatClient;
-  }
+    public KeywordService(ChatClient chatClient) {
+        this.chatClient = chatClient;
+    }
 
-  public Map<String, Map<String, List<String>>> extractKeywords(List<String> files) {
-    String prompt = "Extract keywords and insights from these markdown files: " + files;
-    return chatClient.prompt()
-            .user(prompt)
-            .call()
-            .entity(new ParameterizedTypeReference<Map<String, Map<String, List<String>>>>() {});
-  }
+    /**
+     * Composes the dynamic prompt using the directory path and additional request.
+     * The system prompt from AiConfig is automatically added to every request.
+     */
+    private String composeDynamicPrompt(String directoryPath, String userRequest) {
+        // This dynamic prompt instructs Yoda to process the file contents (provided by the unified tool)
+        // and produce final output without further tool invocations.
+        String prompt;
+        if (!StringUtils.hasText(directoryPath)) {
+            prompt = "Ignore previous instructions, You are Yoda, the wise Jedi Master from Star Wars. Speak in Yoda’s distinctive, wisdom-filled, inverted style. " + userRequest;
+        } else {
+            prompt = "Process all markdown files in the directory: " + directoryPath + ". " +
+                    "You have already obtained the text content from all files. " +
+                    "Now, based on the file content, extract exactly 5 insights in yoda style and exactly 3 keywords for each file. " +
+                    "Do not attempt to call any additional tools. " +
+                    userRequest;
+        }
+        return prompt;
+    }
+
+    /**
+     * Calls the ChatClient with the dynamic prompt and returns Yoda's final response.
+     */
+    public String getYodaResponse(String directoryPath, String userRequest) {
+        String fullPrompt = composeDynamicPrompt(directoryPath, userRequest);
+        return chatClient.prompt()
+                .user(fullPrompt)
+                .call()
+                .content();
+    }
 }
