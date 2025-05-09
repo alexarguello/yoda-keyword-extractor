@@ -143,7 +143,7 @@ public class KeywordService {
    Ensure you have Ollama installed and running locally:
 
 ```bash
-ollama run llama3
+ollama run llama3.2
 ```
 This command will download and start the llama3 model.
 
