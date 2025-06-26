@@ -1,4 +1,5 @@
 # 🧙‍♂️ Yoda Keyword Extractor
+A fun exercise to use Spring AI tool calling and Ollama to complete a task
 
 *“Extract keywords, you must. Enlightenment, you shall find.”* — Yoda
 
